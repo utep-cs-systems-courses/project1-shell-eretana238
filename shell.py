@@ -5,9 +5,16 @@ import os, sys, re
 def tokenize(command):
     pass
 
-commands = ['cd', 'ls', 'sort']
+commands = ['ls', 'cd', 'sort']
+
+prompt_string = '$ '
+try:
+    if not os.environ['PS1']:
+        prompt_string = os.environ['PS1']
+except KeyError as error:
+    print("Unexpected error: ", error)
+
 while True:
-    prompt = input('$ ')
-    if prompt == 'exit':
+    user_input = input(prompt_string)
+    if user_input.startswith('exit'):
         sys.exit(0)
-    
