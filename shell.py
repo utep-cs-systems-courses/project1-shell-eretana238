@@ -4,6 +4,10 @@ import os, sys, re
 
 pid = os.getpid()               # get and remember pid
 
+pr,pw = os.pipe()
+for f in (pr, pw):
+    os.set_inheritable(f, True)
+
 prompt_string = '$ '
 if 'PS1' in os.environ:
     prompt_string = os.environ['PS1']
@@ -24,7 +28,7 @@ while True:
 
     elif rc == 0:                   # child
         os.close(1)                 # redirect child's stdout
-        os.open("p4-output.txt", os.O_CREAT | os.O_WRONLY);
+        os.open("shell-output.txt", os.O_CREAT | os.O_WRONLY);
         os.set_inheritable(1, True)
 
         for dir in re.split(":", os.environ['PATH']): # try each directory in path
