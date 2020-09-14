@@ -12,13 +12,19 @@ if 'PS1' in os.environ:
 def pipe_process():
     pass
 
-def exec_builtin(in_str):
-    if in_str not in builtin_cmd:
-        return 0
-    if in_str.startsWith('exit'):
+def exec_builtin(command):
+    if command[0] not in builtin_cmd:
+        return
+    if command[0] == 'exit':
         sys.exit(0)
-    elif in_str.startsWith('cd'):
-        pass
+    elif command[0] == 'cd': 
+        cwd = os.getcwd()
+        try: 
+            os.chdir(os.path.join(cwd,command[1]))
+        except FileNotFoundError: 
+            print('Directory not found: please try again')
+        except NotADirectoryError:
+            os.chdir(cwd)
     return 0
 
 def exec_command(commands):
@@ -28,12 +34,15 @@ def exec_command(commands):
             os.execve(program, args, os.environ) 
         except FileNotFoundError:
             pass
+    return
 
 while True:
     user_input = input(prompt_string)
     if not user_input:
         continue
     args = re.split(' ', user_input)
+
+    exec_builtin(args)
 
     rc = os.fork()
     
@@ -42,7 +51,7 @@ while True:
         sys.exit(1)
 
     elif rc == 0:                   # child
-        os.close(1)                 # redirect child's stdout
+        # os.close(1)                 # redirect child's stdout
         # os.open("p4-output.txt", os.O_CREAT | os.O_WRONLY);
         # os.set_inheritable(1, True)
 
@@ -51,4 +60,5 @@ while True:
         sys.exit(1)          
     else:                           # parent (forked ok)
         childPidCode = os.wait()
-        os.write(1, ("Parent: Child %d terminated with exit code %d\n" % childPidCode).encode())
+        if childPidCode[1] % 256 != 0:
+            os.write(1, ("Program terminated with exit code %d\n" % childPidCode[1]).encode())
