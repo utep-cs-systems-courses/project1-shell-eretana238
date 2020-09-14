@@ -4,6 +4,14 @@ import os, sys, re
 
 pid = os.getpid()               # get and remember pid
 
+def execute_command(commands):
+    for dir in re.split(":", os.environ['PATH']): # try each directory in path
+        program = "%s/%s" % (dir, commands[0])
+        try:
+            os.execve(program, args, os.environ) # try to exec program
+        except FileNotFoundError:             # ...expected
+            pass                              # ...fail quietly 
+
 prompt_string = '$ '
 if 'PS1' in os.environ:
     prompt_string = os.environ['PS1']
@@ -23,12 +31,7 @@ while True:
         sys.exit(1)
 
     elif rc == 0:                   # child
-        for dir in re.split(":", os.environ['PATH']): # try each directory in path
-            program = "%s/%s" % (dir, args[0])
-            try:
-                print(os.execve(program, args, os.environ)) # try to exec program
-            except FileNotFoundError:             # ...expected
-                pass                              # ...fail quietly 
+        execute_command(args)
 
         sys.exit(1)          
     else:                           # parent (forked ok)
