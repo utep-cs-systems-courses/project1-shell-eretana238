@@ -97,13 +97,16 @@ while True:
         sys.exit(1)
 
     elif rc == 0:                   # child
-        if has_redirects(user_input):
-            os.close(1)                 # redirect child's stdout
+        if redirect_args:
+            if redirect_args[1]:
+                os.close(1)                 # redirect child's stdout
+            else:
+                os.close(0)
             os.open(redirect_args[1], os.O_CREAT | os.O_WRONLY);
             os.set_inheritable(1, True)
             exec_command(list(redirect_args[0]))
             sys.exit(1)
-        if has_pipes(user_input):
+        if pipe_args:
             os.close(1)                 # redirect child's stdout
             os.dup(pw)
             for fd in (pr, pw):
