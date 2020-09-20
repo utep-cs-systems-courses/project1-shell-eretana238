@@ -9,7 +9,7 @@ def get_ps1():
 
 def exec_builtins(command):
     global wait
-    if command[0] == 'exit':
+    if command[0].lower() == 'exit':
         sys.exit(0)
     elif '&' in command:
         wait = False
@@ -108,21 +108,18 @@ def run_process(args):
                 os.write(1, ("Program terminated with exit code %d\n" % 
                     childPidCode[1]).encode())
 
-
-wait = True
-pid = os.getpid()
-os.write(1,get_ps1().encode())
-# user_input = os.read(0,1000)
-user_input = bytes("/usr/bin/uname \n\n /usr/bin/uname", 'UTF-8').decode()
-# user_input = bytes('cat < /usr/bin/passwd', 'UTF-8').decode()
-commands = re.split('[\n]', user_input)
-while '' in commands: commands.remove('')
-for command in commands: re.sub(' ', '', command)
-while commands:
-    args = re.split(' ', commands[0])
-    # print(args)
-    # exec_builtins(args)
-
-    # run_process(args)
-
-    commands.pop(0)
+while True:
+    wait = True
+    pid = os.getpid()
+    os.write(1,get_ps1().encode())
+    user_input = os.read(0,10000)
+    commands = re.split('[\n]', user_input.decode())
+    while '' in commands: commands.remove('')
+    while commands:
+        args = re.split(' ', commands[0])
+        if '' in args: args.remove('')
+        if len(args) > 0:
+            exec_builtins(args)
+            run_process(args)
+            commands.pop(0)
+    
