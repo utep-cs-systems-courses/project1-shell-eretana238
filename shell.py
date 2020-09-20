@@ -7,6 +7,9 @@ def get_ps1():
         return os.environ['PS1']
     return "\033[1;34;40m %s\x1b[0m$ " % os.getcwd()
 
+def create_commands(user_input):
+    pass
+
 def exec_builtins(command):
     global wait
     if command[0] == 'exit':
@@ -19,10 +22,10 @@ def exec_builtins(command):
             try: 
                 os.chdir(command[1])
             except FileNotFoundError: 
-                print('-bash: cd: %s: No such directory' % command[1])
+                os.write(1,('-bash: cd: %s: No such directory' % command[1]).encode())
             except NotADirectoryError:
-                print('-bash: cd: %s: No such directory' % command[1])
-
+                os.write(1,('-bash: cd: %s: No such directory' % command[1]).encode())
+    
 # checks and executes builtin commands "cd" and "exit"
 def exec_command(command):
     for dir in re.split(":", os.environ['PATH']): 
@@ -35,7 +38,6 @@ def exec_command(command):
 def exec_pipe(args):
     cmd1 = args[:args.index('|')]
     cmd2 = args[args.index('|')+1:]
-    print(cmd2)
 
     pr,pw = os.pipe()
     for f in (pr, pw):
@@ -112,16 +114,17 @@ def run_process(args):
 while True:
     wait = True
     pid = os.getpid()
+    os.write(1,get_ps1().encode())
 
-    prompt_string = get_ps1()
-    
-    args = re.split(' ', input(prompt_string).strip())
+    # user_input = os.read(0,1000)
+    user_input = bytes("/usr/bin/uname \n\n /usr/bin/uname", 'UTF-8').decode()
+    print(user_input)
     # make sure to continue prompt in empty string
-    if args[0] == '':
+    if user_input == '':
         continue
 
-    exec_builtins(args)
+    # exec_builtins(args)
 
-    run_process(args)
+    # run_process(args)
 
     
