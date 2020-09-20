@@ -7,9 +7,6 @@ def get_ps1():
         return os.environ['PS1']
     return "\033[1;34;40m %s\x1b[0m$ " % os.getcwd()
 
-def create_commands(user_input):
-    pass
-
 def exec_builtins(command):
     global wait
     if command[0] == 'exit':
@@ -111,20 +108,20 @@ def run_process(args):
                 os.write(1, ("Program terminated with exit code %d\n" % 
                     childPidCode[1]).encode())
 
-while True:
-    wait = True
-    pid = os.getpid()
-    os.write(1,get_ps1().encode())
+# while True:
+wait = True
+pid = os.getpid()
+os.write(1,get_ps1().encode())
+# user_input = os.read(0,1000)
+user_input = bytes("/usr/bin/uname \n\n /usr/bin/uname", 'UTF-8').decode()
+# make sure to continue prompt in empty string
+# if user_input == '':
+#     continue
+# print(user_input)
+args = re.split('[\n]', user_input)
+print(args)
+# exec_builtins(args)
 
-    # user_input = os.read(0,1000)
-    user_input = bytes("/usr/bin/uname \n\n /usr/bin/uname", 'UTF-8').decode()
-    print(user_input)
-    # make sure to continue prompt in empty string
-    if user_input == '':
-        continue
-
-    # exec_builtins(args)
-
-    # run_process(args)
+# run_process(args)
 
     
