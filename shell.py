@@ -108,20 +108,21 @@ def run_process(args):
                 os.write(1, ("Program terminated with exit code %d\n" % 
                     childPidCode[1]).encode())
 
-# while True:
+
 wait = True
 pid = os.getpid()
 os.write(1,get_ps1().encode())
 # user_input = os.read(0,1000)
 user_input = bytes("/usr/bin/uname \n\n /usr/bin/uname", 'UTF-8').decode()
-# make sure to continue prompt in empty string
-# if user_input == '':
-#     continue
-# print(user_input)
-args = re.split('[\n]', user_input)
-print(args)
-# exec_builtins(args)
+# user_input = bytes('cat < /usr/bin/passwd', 'UTF-8').decode()
+commands = re.split('[\n]', user_input)
+while '' in commands: commands.remove('')
+for command in commands: re.sub(' ', '', command)
+while commands:
+    args = re.split(' ', commands[0])
+    # print(args)
+    # exec_builtins(args)
 
-# run_process(args)
+    # run_process(args)
 
-    
+    commands.pop(0)
