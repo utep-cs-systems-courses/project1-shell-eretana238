@@ -1,19 +1,19 @@
 #! /usr/bin/env python3
 
 import os, re, sys
+from os import wait
 
 def get_ps1():
     if 'PS1' in os.environ:
         return os.environ['PS1']
     return "\033[1;34;40m %s\x1b[0m$ " % os.getcwd()
 
-def exec_builtins(command):
-    global wait
+def exec_builtins(command, waiting):
     if command[0].lower() == 'exit':
         sys.exit(0)
     elif '&' in command:
-        wait = False
         command.remove('&')
+        return False
     elif command[0] == 'cd': 
         if len(command) > 1:
             try: 
@@ -22,6 +22,7 @@ def exec_builtins(command):
                 os.write(1,('-bash: cd: %s: No such directory' % command[1]).encode())
             except NotADirectoryError:
                 os.write(1,('-bash: cd: %s: No such directory' % command[1]).encode())
+    return True
     
 # checks and executes builtin commands "cd" and "exit"
 def exec_command(command):
@@ -71,7 +72,7 @@ def redirect(args,n):
         os.open(args[-1], os.O_CREAT | os.O_WRONLY);
     os.set_inheritable(n, True)
 
-def run_process(args):
+def run_process(args, waiting):
     rc = os.fork()
 
     if rc < 0:
@@ -102,24 +103,26 @@ def run_process(args):
             sys.exit(1)
 
     else:                           # parent (forked ok)
-        if wait:
+        if waiting:
             childPidCode = os.wait()
             if childPidCode[1] % 256 != 0:
                 os.write(1, ("Program terminated with exit code %d\n" % 
                     childPidCode[1]).encode())
 
 while True:
-    wait = True
+    waiting = True
     pid = os.getpid()
     os.write(1,get_ps1().encode())
-    user_input = os.read(0,10000)
-    commands = re.split('[\n]', user_input.decode())
+    user_input = os.read(0,1000).decode()
+    if not user_input:
+        break
+    commands = re.split('[\n]', user_input)
     while '' in commands: commands.remove('')
     while commands:
         args = re.split(' ', commands[0])
-        if '' in args: args.remove('')
+        while '' in args: args.remove('')
         if len(args) > 0:
-            exec_builtins(args)
-            run_process(args)
+            waiting = exec_builtins(args, waiting)
+            run_process(args, waiting)
             commands.pop(0)
     
