@@ -87,7 +87,6 @@ def run_process(args, waiting):
         elif '<' in args:
             redirect(args,0)
             exec_command(args)
-            os.write(1, 'hello'.encode())
             os.write(2, ("Child:    Error: Could not exec %s\n" % args[0]).encode())
             sys.exit(1)
         elif '|' in args:
